@@ -1,22 +1,28 @@
-from flask import Flask, Response
+from flask import Flask, Response, request
 import requests
+import hashlib
 
 app = Flask(__name__)
+salt = "UNIQUE_SALT"
 default_name = 'Mishik Ku'
 
-@app.route('/')
+@app.route('/', methods=['GET','POST'])
 def mainpage():
 
     name = default_name
+    if request.method == 'POST':
+        name = request.form['name']
+    salted_name = salt + name
+    name_hash = hashlib.sha256(salted_name.encode()).hexdigest()
 
     header = '<html><head><title>Identidock</title></head><body>'
-    body = '''<form method="POST" action="javascript:void(0)">
-              Hello darling <input type="text" name="name" value="{}">
+    body = '''<form method="POST">
+              Hello! Please, input your name: <input type="text" name="name" value="{0}">
               <input type="submit" value="submit">
               </form>
               <p>You look like is a:
-              <img src="/monster/monster.png" />
-           '''.format(name)
+              <img src="/monster/{1}" />
+           '''.format(name, name_hash)
     footer = '</body></html>'
 
     return header + body + footer
